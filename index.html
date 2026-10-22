@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#f9dce9">
+<title>Mây Nhỏ — 9 Cổng Bí Mật và Phòng Kho Báu</title>
+<style>
+:root{--ink:#493b5e;--paper:#fffaf2;--pink:#ff9ebe;--lav:#e9e0ff}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink)}
+body{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:12px;background:radial-gradient(circle at 12% 8%,#fff4d6,transparent 28%),linear-gradient(135deg,#ffe1ec,#e5e2ff 55%,#d6f3e8)}
+.shell{width:min(100%,1000px);overflow:hidden;border:4px solid #fff;border-radius:22px;background:var(--paper);box-shadow:0 18px 55px #50436d30}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;padding:10px 14px;background:linear-gradient(90deg,#ffdbe8,#ebe3ff);border-bottom:2px solid #fff}
+.brand{font-size:clamp(17px,3vw,24px);font-weight:950;letter-spacing:-.5px}.brand span{color:#d96d9a}
+.hud{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;font-weight:850}.pill,.sound{padding:6px 9px;border:1px solid #fff;border-radius:99px;background:#ffffffd9;white-space:nowrap}.sound{color:var(--ink);font-weight:850;cursor:pointer}
+.gamearea{position:relative;background:#bde7dc;line-height:0;overflow:hidden}
+canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;background:#41355068;line-height:1.42}
+.panel{width:min(94%,455px);max-height:97%;overflow:auto;padding:19px;background:#fffaf2;border:3px solid #fff;border-radius:21px;text-align:center;box-shadow:0 10px 30px #40305040}
+.overlay.treasure-overlay{background:#24152a35;align-items:flex-end;padding-bottom:7px}.overlay.treasure-overlay .panel{width:min(92%,390px);padding:11px 14px;background:#fff9e9f2}.overlay.treasure-overlay .panel p{margin:5px 0 8px}.overlay.treasure-overlay .buttonrow{margin-top:7px}.panel h1{font-size:clamp(21px,4vw,31px);line-height:1.15;margin:0 0 8px;color:#d56d98}.panel p{font-size:13px;margin:9px 0 13px}.buttonrow{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:9px;margin-top:13px}
+.btn{border:0;border-radius:999px;padding:10px 14px;font-size:13px;font-weight:900;color:#4c3d5d;background:#eee6ff;box-shadow:0 4px 0 #cfc0ed;cursor:pointer;touch-action:manipulation}.btn:active,.sound:active,.control:active{transform:translateY(2px)}.btn.easy{background:#d8f2de;box-shadow:0 4px 0 #a5d4af}.btn.normal{background:#ffebc7;box-shadow:0 4px 0 #e2c580}.btn.hard{background:#e5d4ff;box-shadow:0 4px 0 #b99bdf}.btn.primary{background:linear-gradient(135deg,#ffa5c0,#ffc7a4);box-shadow:0 4px 0 #e486a5}
+.hint{padding:10px 14px 4px;text-align:center;font-size:12px;line-height:1.45;color:#6e5d7c}.mobile{display:none;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px 13px;background:#fffaf2;touch-action:none;user-select:none;-webkit-user-select:none}.pad{display:flex;gap:8px}.control{display:flex;align-items:center;justify-content:center;width:55px;height:49px;padding:0;border:2px solid #fff;border-radius:13px;background:#ece4ff;color:#564573;font-weight:950;font-size:21px;box-shadow:0 3px 0 #d0c1f1;touch-action:none;user-select:none;-webkit-user-select:none}.control.action{width:65px;font-size:13px;background:#ffe1e9;box-shadow:0 3px 0 #efb5c8}.foot{padding:8px 12px 12px;text-align:center;color:#8b7c95;font-size:11px}
+@media(pointer:coarse),(max-width:720px){body{padding:5px}.shell{border-width:2px;border-radius:16px}.topbar{padding:8px}.hud{gap:4px;font-size:11px}.pill,.sound{padding:5px 7px}.mobile{display:flex}.hint{font-size:11px}.panel{padding:14px}.btn{padding:9px 11px;font-size:12px}}
+</style>
+</head>
+<body>
+<div class="shell">
+ <header class="topbar">
+  <div class="brand">☁️ Mây Nhỏ <span>9 Cổng Bí Mật</span></div>
+  <div class="hud"><span class="pill" id="modeLabel">🎮 Chọn chế độ</span><span class="pill" id="gateLabel">🚪 —/9</span><span class="pill" id="deathLabel">💫 0 lần</span><button id="soundButton" class="sound" type="button">🔊 Nhạc: bật</button></div>
+ </header>
+ <main class="gamearea">
+  <canvas id="game" width="480" height="270" aria-label="Game Mây Nhỏ pixel art"></canvas>
+  <div class="overlay" id="overlay"><section class="panel"><h1 id="panelTitle">☁️ Mây Nhỏ và 9 Cổng Bí Mật</h1><p id="panelText">Vượt qua 9 cổng với những cái bẫy thích chơi khăm! Sàn có thể sập, gai có thể bật lên và cửa đôi khi không đứng yên.</p><p id="panelExtra"><b>Máy tính:</b> A/D hoặc ←/→ để đi, W/↑/Space để nhảy, R để thử lại, Esc để tạm dừng.<br><b>Điện thoại:</b> dùng các nút ở dưới game.</p><div class="buttonrow" id="panelButtons"><button class="btn easy" data-mode="0">🌱 Dễ · 3 cổng</button><button class="btn normal" data-mode="1">🌼 Bình thường · 3 cổng</button><button class="btn hard" data-mode="2">🌙 Khó · 3 cổng</button></div></section></div>
+ </main>
+ <section class="mobile" aria-label="Điều khiển điện thoại"><div class="pad"><button class="control" data-hold="left" aria-label="Đi trái">◀</button><button class="control" data-hold="right" aria-label="Đi phải">▶</button></div><div class="pad"><button class="control action" data-action="jump">NHẢY ⤴</button><button class="control action" data-action="restart">↻ Thử lại</button></div></section>
+ <div class="hint">🗝️ Mỗi cổng có một chìa khóa. Nhặt chìa khóa rồi mới mở được cửa — cổng cuối dẫn đến căn phòng đầy châu báu!</div>
+ <footer class="foot">Pixel art tự vẽ bằng Canvas · Nhạc chiptune vui nhộn · Chơi trên máy tính và điện thoại · Không cần thư viện ngoài</footer>
+</div>
+<script>
+(()=>{'use strict';
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const W=canvas.width,H=canvas.height,$=id=>document.getElementById(id);
+const overlay=$('overlay'),panelTitle=$('panelTitle'),panelText=$('panelText'),panelExtra=$('panelExtra'),panelButtons=$('panelButtons');
+const modeLabel=$('modeLabel'),gateLabel=$('gateLabel'),deathLabel=$('deathLabel'),soundButton=$('soundButton');
+const MODES=[
+ {name:'Dễ',speed:1.75,jump:5.95,gravity:.25,biome:0},
+ {name:'Bình thường',speed:2.0,jump:6.05,gravity:.28,biome:1},
+ {name:'Khó',speed:2.18,jump:6.2,gravity:.30,biome:2}
+];
+const keys=Object.create(null),touch={left:false,right:false};
+let state='menu',modeIndex=0,stageIndex=0,stage=null,player=null,cameraX=0,frame=0,deaths=0;
+let jumpBuffer=0,coyote=0,particles=[],toast='',toastTimer=0,shake=0,reverseTimer=0,respawnTimer=0,treasureSince=0;
+let audio=null,master=null,musicTimer=null,musicStep=0,soundOn=true,lastSfx=0;
+
+// ---------- AUDIO: vui nhộn, nhanh và to hơn một chút ----------
+function initAudio(){
+ if(!soundOn)return;
+ try{
+  if(!audio){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audio=new AC();master=audio.createGain();master.gain.value=.42;master.connect(audio.destination);}
+  if(audio.state==='suspended')audio.resume();
+  if(!musicTimer)musicTimer=setInterval(playMusicTick,112);
+ }catch(err){console.warn('Audio unavailable',err);}
+}
+function note(freq,duration=.10,type='square',volume=.055,slide=null){
+ if(!soundOn||!audio||!master)return;
+ try{const o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime;o.type=type;o.frequency.setValueAtTime(Math.max(30,freq),t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,slide),t+duration);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+duration);o.connect(g);g.connect(master);o.start(t);o.stop(t+duration+.02);}catch(_){}
+}
+// Giai điệu chiptune nguyên bản theo nhịp nhanh, tươi sáng.
+const melody=[784,988,1175,988,1568,1175,988,784,880,1047,1319,1047,1760,1319,1047,880,784,988,1175,1568,1397,1175,988,880,698,880,1047,1319,1175,988,784,659];
+const bass=[165,0,165,196,0,196,147,0,147,175,0,175,131,0,131,196];
+function playMusicTick(){
+ if(!soundOn||!audio)return;
+ const n=musicStep%melody.length;
+ note(melody[n],.085,'square',.040);
+ if(musicStep%2===0){const b=bass[(musicStep>>1)%bass.length];if(b)note(b,.13,'triangle',.075);}
+ if(musicStep%4===0)note(105,.045,'triangle',.035,55);
+ if(musicStep%8===4)note(180,.035,'square',.018,90);
+ musicStep++;
+}
+function sfx(type){
+ if(!soundOn)return;initAudio();
+ if(type==='jump'){note(390,.085,'square',.065,730);}
+ else if(type==='collect'){note(880,.075,'square',.065,1175);setTimeout(()=>note(1175,.10,'triangle',.06,1568),45);}
+ else if(type==='trap'){note(240,.16,'sawtooth',.055,65);}
+ else if(type==='death'){note(440,.24,'square',.065,80);setTimeout(()=>note(155,.15,'triangle',.05,55),60);}
+ else if(type==='gate'){note(659,.11,'square',.055);setTimeout(()=>note(784,.11,'square',.055),75);setTimeout(()=>note(988,.14,'square',.06),150);}
+ else if(type==='switch'){note(523,.12,'square',.05,880);}
+ else if(type==='treasure'){
+  [784,988,1175,1568,1175,1568,1976].forEach((f,i)=>setTimeout(()=>note(f,.19,'square',.065),i*95));
+  setTimeout(()=>note(196,.28,'triangle',.07,392),100);
+ }
+ else if(type==='click'){note(587,.045,'square',.035);}
+}
+soundButton.addEventListener('click',()=>{
+ soundOn=!soundOn;
+ soundButton.textContent=soundOn?'🔊 Nhạc: bật':'🔇 Nhạc: tắt';
+ if(soundOn){initAudio();if(master&&audio)master.gain.setTargetAtTime(.42,audio.currentTime,.025);sfx('click');}
+ else if(master&&audio)master.gain.setTargetAtTime(0,audio.currentTime,.02);
+});
+
+// ---------- STAGE DESIGN ----------
+function plat(x,y,w,h=32,opt={}){return{x,y,w,h,crumble:!!opt.crumble,fake:!!opt.fake,gone:false,crumbleTimer:null,fakeTimer:null,kind:opt.kind||'ground'};}
+function makeStage(mi,si){
+ const n=mi*3+si,width=970,platforms=[plat(0,238,185),plat(218,238,190),plat(452,238,195),plat(690,238,280),plat(270,192,54,10,{kind:'float'}),plat(370,166,48,10,{kind:'float'}),plat(500,192,54,10,{kind:'float'}),plat(745,183,55,10,{kind:'float'})];
+ const spikes=[],saws=[],fallers=[],reversals=[],stars=[];let fakeDoor=false;
+ const keyPositions=[135,305,125,125,145,580,125,320,825];
+ const key={x:keyPositions[n],y:220,taken:false};
+ const addSpike=(x,w=22,trigger=x-39)=>spikes.push({x,w,baseY:238,trigger,progress:0,active:false,speed:[.12,.17,.22][mi]});
+ const addSaw=(x,min,max,y=224,speed=.62)=>saws.push({x,min,max,y,r:8,dir:1,speed:speed*(1+mi*.23)});
+ const addFaller=(x,trigger=x-40)=>fallers.push({x,y:30,w:18,h:18,trigger,vy:0,active:false,landed:false,speed:[.20,.27,.34][mi]});
+ const star=(x,y)=>stars.push({x,y,taken:false});
+ if(n===0){platforms[1].crumble=true;addSpike(295,20,258);star(286,170);star(390,145)}
+ if(n===1){addSpike(245,22,212);addFaller(478,438);star(330,145);addSaw(565,530,615,224,.48)}
+ if(n===2){platforms[2].crumble=true;addSpike(705,22,665);fakeDoor=true;star(525,165);star(770,155)}
+ if(n===3){platforms[1].crumble=true;addSaw(285,245,335,223,.70);addSpike(525,22,488);star(290,165);addFaller(710,675)}
+ if(n===4){reversals.push({x:322,w:75,triggered:false});addSpike(480,24,445);addFaller(645,606);star(384,140);addSaw(750,710,800,223,.75)}
+ if(n===5){addFaller(250,218);addSaw(470,440,515,224,.80);fakeDoor=true;addSpike(705,23,668);star(382,143);star(590,168)}
+ if(n===6){platforms[1].crumble=true;platforms[2].crumble=true;addSpike(245,22,212);addSpike(490,24,455);fakeDoor=true;star(289,166)}
+ if(n===7){reversals.push({x:235,w:83,triggered:false});platforms[3].fake=true;addSaw(420,385,460,222,.88);addSpike(715,23,678);star(389,145);addFaller(620,580)}
+ if(n===8){platforms[1].crumble=true;platforms[2].crumble=true;addSpike(235,23,202);addSpike(475,24,437);addSpike(702,25,663);addFaller(585,548);addSaw(362,337,410,224,.9);reversals.push({x:515,w:75,triggered:false});fakeDoor=true;star(294,164);star(540,150)}
+ return{n,width,platforms,spikes,saws,fallers,reversals,stars,key,door:{x:914,y:202,w:22,h:36,tricked:false},fakeDoor};
+}
+function hud(){modeLabel.textContent='🎮 '+MODES[modeIndex].name;const keyMark=stage&&stage.key&&stage.key.taken?'🗝️✓':'🗝️—';gateLabel.textContent=`🚪 ${modeIndex*3+stageIndex+1}/9 · ${keyMark}`;deathLabel.textContent=`💫 ${deaths} lần`;}
+function startMode(mi){initAudio();modeIndex=mi;stageIndex=0;deaths=0;startStage();}
+function startStage(){stage=makeStage(modeIndex,stageIndex);player={x:20,y:216,w:12,h:20,vx:0,vy:0,grounded:false,face:1};cameraX=0;particles=[];reverseTimer=0;jumpBuffer=0;coyote=0;toast=`CỔNG ${stage.n+1} — ${MODES[modeIndex].name.toUpperCase()}`;toastTimer=100;state='playing';overlay.classList.remove('treasure-overlay');overlay.style.display='none';hud();}
+function showTreasureEnding(){
+ state='treasure';
+ cameraX=0;
+ player={x:W/2-6,y:190,w:12,h:20,vx:0,vy:0,grounded:true,face:1};
+ treasureSince=frame;
+ overlay.classList.add('treasure-overlay');
+ sfx('treasure');
+ panel(
+  '🏆 Bạn đã tìm thấy kho báu!',
+  'Chiếc chìa khóa đã mở cánh cửa cuối cùng! Căn phòng lấp lánh đầy vàng, tiền xu và đá quý thuộc về bạn. Chúc mừng nhà thám hiểm!',
+  [
+   {label:'Chơi lại chế độ này',action:'repeat',cls:'primary'},
+   {label:'Chọn độ khó khác',action:'menu'}
+  ],
+  '💎 ✨ 🪙 KHO BÁU HUYỀN THOẠI 🪙 ✨ 💎'
+ );
+}
+
+function panel(title,text,buttons,extra=''){if(state!=='treasure')overlay.classList.remove('treasure-overlay');panelTitle.textContent=title;panelText.textContent=text;panelExtra.innerHTML=extra;panelButtons.innerHTML='';for(const b of buttons){const el=document.createElement('button');el.className='btn '+(b.cls||'');el.textContent=b.label;if(b.mode!==undefined)el.dataset.mode=b.mode;if(b.action)el.dataset.action=b.action;panelButtons.appendChild(el)}overlay.style.display='flex';}
+function showMenu(){state='menu';panel('☁️ Mây Nhỏ và 9 Cổng Bí Mật','Vượt qua 9 cổng với những chiếc bẫy thích chơi khăm! Sàn có thể sập, gai có thể bật lên và cửa đôi khi không đứng yên.',[{label:'🌱 Dễ · 3 cổng',mode:0,cls:'easy'},{label:'🌼 Bình thường · 3 cổng',mode:1,cls:'normal'},{label:'🌙 Khó · 3 cổng',mode:2,cls:'hard'}],'<b>Máy tính:</b> A/D hoặc ←/→ để đi, W/↑/Space để nhảy, R để thử lại, Esc để tạm dừng.<br><b>Điện thoại:</b> sử dụng các nút ở dưới game.');}
+panelButtons.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.mode!==undefined){startMode(Number(b.dataset.mode));return}const a=b.dataset.action;if(a==='retry')startStage();if(a==='continue'){state='playing';overlay.style.display='none'}if(a==='menu')showMenu();if(a==='next'){stageIndex++;if(stageIndex<3){startStage()}else{state='complete';panel('🏆 Hoàn thành chế độ!',`Bạn đã vượt qua cả 3 cổng của chế độ ${MODES[modeIndex].name}!`,[{label:'Chọn chế độ khác',action:'menu',cls:'primary'},{label:'Chơi lại chế độ này',action:'repeat'}])}}if(a==='repeat')startMode(modeIndex)});
+
+// ---------- INPUT: keyboard + pointer controls with buffer/coyote jump ----------
+function clearInput(){for(const k in keys)keys[k]=false;touch.left=false;touch.right=false;jumpBuffer=0;}
+window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowleft','arrowright','arrowup',' ','arrowdown'].includes(k))e.preventDefault();if(!keys[k]&&!e.repeat&&['w','arrowup',' '].includes(k))jumpBuffer=8;keys[k]=true;if(k==='r'&&state==='playing')startStage();if(k==='escape'&&state==='playing'){state='paused';panel('⏸ Tạm dừng','Tiếp tục hành trình hoặc thử lại cổng hiện tại.',[{label:'Tiếp tục',action:'continue',cls:'primary'},{label:'Thử lại cổng',action:'retry'},{label:'Chọn chế độ',action:'menu'}])}}, {passive:false});
+window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});window.addEventListener('blur',clearInput);document.addEventListener('visibilitychange',()=>{if(document.hidden)clearInput()});
+document.querySelectorAll('[data-hold]').forEach(btn=>{const which=btn.dataset.hold;btn.addEventListener('pointerdown',e=>{e.preventDefault();touch[which]=true;try{btn.setPointerCapture(e.pointerId)}catch(_){}});const release=e=>{e.preventDefault();touch[which]=false};btn.addEventListener('pointerup',release);btn.addEventListener('pointercancel',release);btn.addEventListener('lostpointercapture',()=>{touch[which]=false})});
+document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('pointerdown',e=>{e.preventDefault();if(btn.dataset.action==='jump')jumpBuffer=8;if(btn.dataset.action==='restart'&&stage)startStage();try{btn.setPointerCapture(e.pointerId)}catch(_){}}));
+
+function overlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
+function activePlatforms(){return stage.platforms.filter(p=>!p.gone)}
+function puff(x,y,color='#fff0a8',count=8){for(let i=0;i<count;i++)particles.push({x,y,vx:(Math.random()-.5)*2.6,vy:-Math.random()*2,life:16+Math.random()*14,color,size:1+Math.random()*2});}
+function die(msg){if(state!=='playing')return;deaths++;hud();state='respawn';respawnTimer=28;shake=6;sfx('death');toast=msg;toastTimer=35;puff(player.x+6,player.y+8,'#ff8eaf',12);}
+function update(){frame++;if(toastTimer>0)toastTimer--;if(shake>0)shake--;if(state==='respawn'){respawnTimer--;if(respawnTimer<=0)startStage();return}if(state!=='playing')return;
+ const cfg=MODES[modeIndex];if(reverseTimer>0)reverseTimer--;let dir=0;if(keys.a||keys.arrowleft||touch.left)dir--;if(keys.d||keys.arrowright||touch.right)dir++;if(reverseTimer>0)dir*=-1;player.vx=dir*cfg.speed;if(dir)player.face=dir;
+ if(player.grounded)coyote=7;else coyote=Math.max(0,coyote-1);if(jumpBuffer>0)jumpBuffer--;if(jumpBuffer>0&&coyote>0){player.vy=-cfg.jump;player.grounded=false;coyote=0;jumpBuffer=0;sfx('jump');puff(player.x+6,player.y+20,'#ffffff',4)}
+ // Va chạm ngang giúp tránh xuyên qua nền.
+ player.x+=player.vx;player.x=Math.max(0,Math.min(stage.width-player.w,player.x));for(const p of activePlatforms()){if(overlap(player,p)&&player.y+player.h>p.y+3){if(player.vx>0)player.x=p.x-player.w;else if(player.vx<0)player.x=p.x+p.w}}
+ const oldY=player.y;player.vy=Math.min(player.vy+cfg.gravity,7);player.y+=player.vy;player.grounded=false;for(const p of activePlatforms()){if(player.x+player.w>p.x&&player.x<p.x+p.w&&player.vy>=0&&oldY+player.h<=p.y+5&&player.y+player.h>=p.y){player.y=p.y-player.h;player.vy=0;player.grounded=true;if(p.crumble&&p.crumbleTimer===null){p.crumbleTimer=38;sfx('trap');toast='Sàn đang nứt! Nhảy đi!';toastTimer=55}if(p.fake&&p.fakeTimer===null){p.fakeTimer=17;toast='Ủa? Sàn này có vẻ không ổn…';toastTimer=48}}}
+ for(const p of stage.platforms){if(p.crumbleTimer!==null&&p.crumbleTimer>0){p.crumbleTimer--;if(p.crumbleTimer===10){toast='NHẢY NGAY!';toastTimer=20}}else if(p.crumbleTimer===0){p.gone=true;p.crumbleTimer=-1;puff(p.x+p.w/2,p.y,'#d9a5c0',8)}if(p.fakeTimer!==null&&p.fakeTimer>0)p.fakeTimer--;else if(p.fakeTimer===0){p.gone=true;p.fakeTimer=-1;sfx('trap');puff(p.x+p.w/2,p.y,'#d9a5c0',8)}}
+ // Gai ẩn trồi lên khi người chơi đến gần.
+ for(const s of stage.spikes){if(player.x+player.w>s.trigger&&player.x<s.x+s.w+36&&!s.active){s.active=true;sfx('trap');toast='BẪY GAI! NHẢY LÊN!';toastTimer=40}if(s.active)s.progress=Math.min(1,s.progress+s.speed);if(s.progress>.65&&overlap(player,{x:s.x+2,y:s.baseY-11*s.progress,w:s.w-4,h:11*s.progress+1}))die('Gai bất ngờ bật lên!');}
+ for(const z of stage.reversals){if(!z.triggered&&player.x+player.w>z.x&&player.x<z.x+z.w){z.triggered=true;reverseTimer=modeIndex===0?75:modeIndex===1?100:125;sfx('trap');toast='ĐẢO CHIỀU ĐIỀU KHIỂN!';toastTimer=65}}
+ for(const f of stage.fallers){if(!f.active&&player.x>f.trigger){f.active=true;sfx('trap');toast='Coi chừng trên đầu!';toastTimer=28}if(f.active&&!f.landed){f.vy+=f.speed;f.y+=f.vy;const p=activePlatforms().find(p=>f.x+f.w>p.x&&f.x<p.x+p.w&&f.y+f.h>=p.y&&f.y+f.h-f.vy<=p.y);if(p){f.y=p.y-f.h;f.vy=0;f.landed=true}if(overlap(player,f))die('Khối đá từ trên cao rơi xuống!')}}
+ for(const s of stage.saws){s.x+=s.dir*s.speed;if(s.x<s.min){s.x=s.min;s.dir=1}if(s.x>s.max){s.x=s.max;s.dir=-1}if(overlap(player,{x:s.x-s.r+2,y:s.y-s.r+2,w:s.r*2-4,h:s.r*2-4}))die('Bánh xe gai chặn đường!')}
+ for(const c of stage.stars){if(!c.taken&&overlap(player,{x:c.x-4,y:c.y-4,w:8,h:8})){c.taken=true;sfx('collect');puff(c.x,c.y,'#ffdf60',10);toast='Lấp lánh! +1 sao';toastTimer=28}}
+ // Mỗi cổng có một chìa khóa. Phải nhặt chìa trước khi mở cửa.
+ const k=stage.key;
+ if(k&&!k.taken&&overlap(player,{x:k.x-3,y:k.y-5,w:9,h:12})){
+  k.taken=true;sfx('collect');puff(k.x,k.y,'#ffd64f',15);
+  toast='Đã tìm thấy chìa khóa! Mở cửa thôi!';toastTimer=75;hud();
+ }
+ const d=stage.door;
+ if(stage.fakeDoor&&!d.tricked&&player.x+player.w>d.x-45){
+  d.tricked=true;const old=d.x;d.x=Math.min(stage.width-d.w-3,d.x+54);
+  stage.spikes.push({x:old-4,w:20,baseY:238,trigger:old-25,progress:.12,active:true,speed:[.12,.17,.22][modeIndex]});
+  sfx('trap');toast='CỬA GIẢ! Cổng thật vừa chạy mất!';toastTimer=65;
+ }
+ if(overlap(player,d)){
+  if(!stage.key.taken){
+   player.x=Math.min(player.x,d.x-player.w-1);
+   toast='Cửa đang khóa! Hãy tìm chìa khóa!';toastTimer=55;sfx('trap');
+  }else if(stageIndex<2){
+   sfx('gate');state='between';
+   panel('✨ Qua cổng thành công!',`Bạn dùng chìa khóa mở được Cổng ${stage.n+1}. Cổng tiếp theo sẽ có trò đánh lừa mới!`,[{label:'Đến cổng tiếp theo →',action:'next',cls:'primary'},{label:'Chọn chế độ khác',action:'menu'}]);
+  }else{
+   sfx('gate');showTreasureEnding();
+  }
+ }
+ if(player.y>H+35)die('Rơi xuống vực mất rồi!');for(const p of particles){p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.life--}particles=particles.filter(p=>p.life>0);cameraX=Math.max(0,Math.min(stage.width-W,player.x-W*.34));}
+
+// ---------- ĐỒ HỌA PIXEL ART ----------
+function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
+function drawBackground(){const biome=MODES[modeIndex].biome;const sets=[['#9ce4dc','#e1f6c7','#6bc5a5','#3d9a86'],['#f7c785','#f7e0aa','#d89a5c','#a95f57'],['#202746','#4b4278','#6654a0','#2d304f']][biome];const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,sets[0]);g.addColorStop(1,sets[1]);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ if(biome===0){rect(390,30,18,18,'#fff1b0');rect(394,26,10,26,'#fff1b0');rect(386,34,26,10,'#fff1b0');for(let i=0;i<5;i++){let x=(i*125-cameraX*.20+W+250)%(W+120)-30,y=35+(i%3)*22;rect(x,y,25,7,'#f9fff1');rect(x+6,y-5,12,8,'#f9fff1');rect(x+24,y+2,12,5,'#f9fff1')}for(let i=0;i<8;i++){let x=(i*79-cameraX*.36+W*3)%(W+80)-20;rect(x,190+(i%3)*12,34,60,sets[2]);rect(x+7,183+(i%3)*12,20,12,'#79c9a5')}}
+ else if(biome===1){rect(388,31,24,24,'#fff0a9');rect(392,25,16,36,'#fff0a9');rect(382,37,36,12,'#fff0a9');for(let i=0;i<7;i++){let x=(i*95-cameraX*.3+W*4)%(W+90)-30;rect(x,177+(i%3)*9,36,70,sets[2]);rect(x+4,166+(i%3)*9,28,18,'#f2b873');rect(x+10,188+(i%2)*9,7,13,'#b97055')}}
+ else{rect(390,29,18,18,'#fff0c4');rect(395,24,18,18,sets[0]);for(let i=0;i<45;i++){const x=(i*47-cameraX*.12+W*5)%(W+30)-10,y=(i*29)%155;rect(x,y,2,2,'#fff4cb')}for(let i=0;i<7;i++){let x=(i*88-cameraX*.28+W*5)%(W+100)-30;rect(x,175+(i%3)*10,38,70,sets[2]);rect(x+9,169+(i%3)*10,18,10,'#8875c6');rect(x+15,183+(i%3)*10,6,8,'#e5a7ed')}}
+ for(let i=0;i<18;i++){const x=(i*39-cameraX*.53+W*10)%(W+45)-10;rect(x,226+(i%3)*2,8,10,sets[2]);if(i%2===0)rect(x+3,222,4,5,sets[3])}}
+function drawPlatforms(){const biome=MODES[modeIndex].biome;const pal=[['#a66f7f','#f0a6b9','#82c99d','#e1f8ba'],['#98624b','#d99a67','#f0b65e','#ffe1a2'],['#37365d','#6f62a8','#63b7a9','#b6fff0']][biome];for(const p of activePlatforms()){const x=Math.round(p.x-cameraX);if(x+p.w<0||x>W)continue;rect(x,p.y,p.w,p.h,pal[0]);rect(x,p.y,p.w,4,pal[2]);if(p.kind==='float'){rect(x+3,p.y+4,p.w-6,2,pal[1])}else{for(let tx=x+4;tx<x+p.w-2;tx+=12){rect(tx,p.y+9,5,3,pal[1]);rect(tx+5,p.y+19,4,3,pal[1])}}if(p.crumbleTimer!==null&&p.crumbleTimer>0){rect(x+p.w*.3,p.y+4,2,11,'#382d4a');rect(x+p.w*.3+2,p.y+12,5,2,'#382d4a')}}}
+function drawSpikes(){for(const s of stage.spikes){const x=Math.round(s.x-cameraX),h=Math.round(11*s.progress);if(x+s.w<0||x>W)continue;for(let sx=0;sx<s.w;sx+=7){ctx.fillStyle=MODES[modeIndex].biome===2?'#f1d9ff':'#6e536d';ctx.beginPath();ctx.moveTo(x+sx,s.baseY);ctx.lineTo(x+sx+3,s.baseY-h);ctx.lineTo(x+sx+7,s.baseY);ctx.fill();ctx.fillStyle='#fff0f5';ctx.fillRect(x+sx+2,s.baseY-h+2,1,Math.max(0,h-2))}}}
+function drawSaws(){for(const s of stage.saws){const x=s.x-cameraX,y=s.y;const points=12;for(let i=0;i<points;i++){const a=i*Math.PI*2/points+frame*.08;const r=i%2?5:s.r;const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r;rect(px-2,py-2,4,4,'#e4e6f5')}rect(x-4,y-4,8,8,'#9b8bb7');rect(x-1,y-1,3,3,'#fff')}}
+function drawFallers(){for(const f of stage.fallers){if(!f.active)continue;const x=f.x-cameraX;rect(x,f.y,f.w,f.h,'#7d748e');rect(x+3,f.y+3,f.w-6,3,'#ccc3dc');rect(x+5,f.y+6,3,7,'#443b59');rect(x+11,f.y+11,4,3,'#443b59')}}
+function drawStars(){for(const s of stage.stars){if(s.taken)continue;const x=Math.round(s.x-cameraX),y=Math.round(s.y+Math.sin(frame*.14+s.x)*2);rect(x-1,y-5,3,10,'#ffdf62');rect(x-5,y-1,10,3,'#ffdf62');rect(x-2,y-2,4,4,'#fff9c9')}}
+function drawKey(){const k=stage&&stage.key;if(!k||k.taken)return;const x=Math.round(k.x-cameraX),y=Math.round(k.y+Math.sin(frame*.13)*1.5);rect(x-2,y-5,6,6,'#fff3a2');rect(x-1,y-4,4,4,'#eaa72a');rect(x,y-3,2,2,'#fff3a2');rect(x+1,y,3,3,'#ffda48');rect(x+3,y+2,3,3,'#ffda48');rect(x+3,y+2,2,1,'#fff2a1');rect(x+1,y+2,2,8,'#ffcf36');rect(x+1,y+7,5,2,'#ffcf36');rect(x+4,y+6,2,3,'#ffcf36')}
+function drawDoor(){const d=stage.door,x=Math.round(d.x-cameraX),y=d.y;const unlocked=!!(stage.key&&stage.key.taken);rect(x-3,y-3,d.w+6,d.h+3,unlocked?'#fff0a3':'#b5a4bd');rect(x,y,d.w,d.h,unlocked?'#d99a42':'#62566d');rect(x+3,y+3,d.w-6,d.h-3,unlocked?'#ffe3a0':'#877b91');rect(x+6,y+6,3,6,unlocked?'#fff7c6':'#b5adbd');rect(x+14,y+14,3,3,unlocked?'#fff7c6':'#c4bacd');if(!unlocked){rect(x+8,y+23,7,7,'#e6c15c');rect(x+9,y+24,5,5,'#7f5b35');rect(x+10,y+21,3,4,'#e6c15c')}}
+function drawPlayer(){if(!player)return;if(state==='respawn'&&frame%4<2)return;const x=Math.round(player.x-cameraX),y=Math.round(player.y);const edge=MODES[modeIndex].biome===2?'#62517c':'#6f5a75';rect(x+2,y+1,3,5,'#fff9f1');rect(x+8,y,3,6,'#fff9f1');rect(x+3,y+2,1,3,'#f1a0bb');rect(x+9,y+2,1,3,'#f1a0bb');rect(x,y+6,13,10,'#fffaf1');rect(x+2,y+4,9,12,'#fffaf1');rect(x+1,y+8,11,7,edge);rect(x+2,y+7,9,8,'#fffaf1');rect(x+3,y+9,2,2,'#45394e');rect(x+8,y+9,2,2,'#45394e');rect(x+1,y+12,3,2,'#f3a0b8');rect(x+10,y+12,2,2,'#f3a0b8');rect(x+5,y+13,3,1,'#745c75');rect(x+3,y+16,3,3,'#fffaf1');rect(x+8,y+16,3,3,'#fffaf1');if(Math.abs(player.vx)>.1&&player.grounded&&frame%8<4){rect(x+1,y+19,4,1,'#f5b1c6');rect(x+8,y+19,4,1,'#f5b1c6')}}
+function drawParticles(){for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/30);rect(p.x-cameraX,p.y,p.size,p.size,p.color)}ctx.globalAlpha=1}
+
+// ---------- PHÒNG KHO BÁU Ở KẾT THÚC ----------
+function drawTreasureRoom(){
+ const g=ctx.createLinearGradient(0,0,0,H);
+ g.addColorStop(0,'#30203f');g.addColorStop(.68,'#63405d');g.addColorStop(1,'#a86b45');
+ ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ for(let y=12;y<190;y+=16){for(let x=-8;x<W;x+=24){const ox=((Math.floor(y/16)%2)*12);rect(x+ox,y,21,12,'#49304e');rect(x+ox+2,y+2,17,2,'#65415b');rect(x+ox+2,y+8,6,2,'#382742')}}
+ rect(0,11,W,5,'#e9b94d');rect(0,17,W,2,'#fff0a0');rect(0,203,W,7,'#e9b94d');rect(0,210,W,H-210,'#563349');
+ for(let x=0;x<W;x+=18){rect(x,242,15,4,'#8c4e4a');rect(x+3,248,7,3,'#b87948')}
+ // Cửa vòm đã mở phía sau.
+ rect(198,51,84,142,'#d8a447');rect(204,57,72,136,'#3a2248');rect(211,64,58,129,'#170f2e');rect(207,54,66,8,'#ffdf78');rect(217,72,3,112,'#684077');rect(260,72,3,112,'#684077');
+ for(let i=0;i<6;i++)rect(215+i*8,95,3,3,'#ffdf78');
+ // Các cột dát vàng.
+ for(const x of [30,77,355,402]){rect(x,40,24,158,'#c98736');rect(x+4,44,16,150,'#f0c45c');rect(x-4,39,32,8,'#ffe08b');rect(x-3,190,30,8,'#ffe08b');for(let y=58;y<185;y+=22)rect(x+7,y,10,4,'#d99b43')}
+ // Những đống xu vàng.
+ for(let i=0;i<9;i++){const x=8+i*55,rows=2+(i%3);for(let r=0;r<rows;r++){for(let c=0;c<4;c++){rect(x+c*5,222-r*4,5,3,'#e8b83e');rect(x+c*5+1,222-r*4,3,1,'#fff08b')}}}
+ // Rương báu nhỏ.
+ rect(38,183,88,35,'#874b2e');rect(34,178,96,12,'#a96b38');rect(39,190,86,25,'#d99a40');rect(42,193,80,4,'#f6cb61');rect(47,200,10,15,'#8f542d');rect(91,200,10,15,'#8f542d');rect(77,195,12,15,'#ffdf70');rect(80,198,6,8,'#fff2a4');
+ rect(42,166,78,10,'#a96534');rect(47,159,68,9,'#ddaa4e');rect(50,161,62,3,'#ffe58b');rect(77,162,10,7,'#f6d263');
+ // Đá quý nhiều màu.
+ const gems=[['#5df1cf',137,178],['#e8a9ff',151,172],['#77c7ff',166,180],['#ff7da8',180,174],['#fff17f',195,182],['#8ef2d4',208,173],['#b5a0ff',223,181],['#ffcf5d',240,174],['#63d6ff',256,182],['#e7a3ff',274,175],['#ff8ba8',292,183],['#fff17f',310,173],['#72e8c4',329,181]];
+ for(const [color,x,y] of gems){rect(x,y,7,7,color);rect(x+2,y-3,4,3,color);rect(x+2,y+7,4,3,'#70456b');rect(x+1,y+1,2,2,'#fff9df')}
+ // Rương kho báu lớn.
+ rect(332,187,103,29,'#86462f');rect(327,179,113,13,'#b8783d');rect(334,193,99,22,'#d49a42');rect(338,196,91,4,'#f7d36c');rect(350,201,10,14,'#87512d');rect(407,201,10,14,'#87512d');rect(376,196,15,13,'#ffe37a');rect(380,198,7,7,'#fff5b6');rect(336,167,94,10,'#a76535');rect(343,159,80,9,'#e2b04e');rect(346,161,73,3,'#fff0a0');
+ // Ánh sáng lấp lánh.
+ for(let i=0;i<16;i++){const x=(i*31+17)%W,y=35+(i*37)%145;if((frame+i*3)%17<9){rect(x,y,2,6,'#fff5ad');rect(x-2,y+2,6,2,'#fff5ad')}}
+ // Nhân vật đứng giữa phòng châu báu.
+ const savedCamera=cameraX;cameraX=0;
+ if(player){player.x=W/2-6;player.y=190;player.vx=0;player.vy=0;drawPlayer()}
+ cameraX=savedCamera;
+ ctx.textAlign='center';ctx.font='bold 13px monospace';ctx.fillStyle='#fff1a2';ctx.fillText('PHÒNG KHO BÁU HUYỀN THOẠI',W/2,31);
+ ctx.font='bold 7px monospace';ctx.fillStyle='#ffe6bd';ctx.fillText('VÀNG • TIỀN XU • ĐÁ QUÝ',W/2,42);
+}
+
+function draw(){
+ ctx.save();
+ if(shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
+ if(state==='treasure'){drawTreasureRoom()}
+ else{
+  drawBackground();
+  if(stage){drawPlatforms();drawSpikes();drawSaws();drawFallers();drawStars();drawKey();drawDoor();drawPlayer();drawParticles()}
+  if(state==='respawn'){ctx.fillStyle='#fffaf1b9';ctx.fillRect(0,0,W,H);ctx.fillStyle='#493b5e';ctx.font='bold 17px monospace';ctx.textAlign='center';ctx.fillText('ÔI! THỬ LẠI NHÉ…',W/2,H/2)}
+  if(state==='playing'&&toastTimer>0){ctx.font='bold 11px monospace';ctx.textAlign='center';const tw=Math.min(440,ctx.measureText(toast).width+18);rect((W-tw)/2,7,tw,20,'#fff9ed');rect((W-tw)/2+2,9,tw-4,16,'#fff9ed');ctx.fillStyle='#493b5e';ctx.fillText(toast,W/2,20)}
+  if(reverseTimer>0&&state==='playing'){rect(W-116,32,108,14,'#53416d');ctx.fillStyle='#fff';ctx.font='bold 8px monospace';ctx.textAlign='center';ctx.fillText('↔ ĐẢO ĐIỀU KHIỂN',W-62,42)}
+ }
+ ctx.restore();
+}
+function loop(){update();draw();requestAnimationFrame(loop)}
+stage=makeStage(0,0);
+player={x:20,y:216,w:12,h:20,vx:0,vy:0,grounded:false,face:1};
+showMenu();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
